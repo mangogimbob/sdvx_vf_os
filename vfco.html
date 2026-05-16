@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDVX NABLA VFOP DASHBOARD</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Orbitron:wght@700;900&display=swap');
+
+        /* 🚨 [방법 2] 나중에 서버에 올렸을 때 폰트 파일과 연동되는 로컬 웹 폰트 정의 */
+        @font-face {
+            font-family: 'RealTerminator';
+            src: url('Terminator.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'RealBauhaus';
+            src: url('Bauhaus93.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #050510;
+            /* 사볼 나블라 테마: 어두운 아케이드 감성의 보라/초록 그라데이션 및 스캔라인 */
+            background-image: radial-gradient(circle at 15% 20%, rgba(138, 43, 226, 0.18) 0%, transparent 50%), radial-gradient(circle at 85% 80%, rgba(0, 255, 170, 0.12) 0%, transparent 50%), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.45) 2px, rgba(0,0,0,0.45) 4px);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: rgba(12, 12, 25, 0.85);
+            border: 1px solid rgba(0, 255, 170, 0.25);
+            border-radius: 16px;
+            padding: 35px;
+            backdrop-filter: blur(12px);
+        }
+
+        /* 폰트 고증: 타이틀 및 라벨에 Terminator 적용 (실패 시 Orbitron 대체) */
+        h1 {
+            font-family: 'RealTerminator', 'Orbitron', sans-serif;
+            color: #00ffa2;
+            text-shadow: 0 0 12px rgba(0, 255, 162, 0.6);
+            text-align: center;
+            letter-spacing: 2px;
+            margin-top: 0;
+            font-size: 2.2em;
+        }
+
+        .status-box {
+            background: rgba(0, 0, 0, 0.7);
+            border-left: 4px solid #ff007c;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            color: #b0b0c5;
+        }
+
+        textarea {
+            width: 100%;
+            height: 130px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ffa2;
+            border: 1px solid #252535;
+            border-radius: 8px;
+            padding: 15px;
+            box-sizing: border-box;
+            font-family: monospace;
+            resize: none;
+            transition: all 0.3s;
+        }
+
+            textarea:focus {
+                outline: none;
+                border-color: #ff007c;
+            }
+
+        button {
+            font-family: 'RealTerminator', 'Orbitron', sans-serif;
+            background: linear-gradient(45deg, #ff007c, #b30057);
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 1.25em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+            button:hover {
+                background: linear-gradient(45deg, #ff1a8c, #cc0066);
+
+                transform: translateY(-2px);
+            }
+
+        /* 대시보드 카드 스타일 */
+        .dashboard-view {
+            display: none;
+            margin-top: 35px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .profile-card {
+            background: linear-gradient(135deg, rgba(25, 25, 45, 0.95), rgba(15, 15, 30, 0.95));
+            border: 1px solid #ff007c;
+            padding: 25px;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+            .profile-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #00ffa2, #00b8ff, #ff007c);
+            }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .profile-title {
+            font-family: 'RealTerminator', 'Orbitron', sans-serif;
+            font-size: 1.1em;
+            color: #888;
+            letter-spacing: 1px;
+        }
+
+        .info-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .info-name-block {
+            text-align: left;
+        }
+
+        .info-label {
+            font-size: 0.8em;
+            color: #65657a;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .info-name {
+            font-size: 1.8em;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .info-id {
+            font-size: 0.9em;
+            color: #00b8ff;
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 3px;
+        }
+
+        /* 폰트 고증: 숫자 레이아웃 영역에 Bauhaus 93 매핑 */
+        .info-vf {
+            font-family: 'RealBauhaus', 'Orbitron', sans-serif;
+            font-size: 2.8em;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            line-height: 1;
+        }
+
+        /* 하부 상세 스펙 리스트 스타일 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px 15px;
+            border-radius: 6px;
+            text-align: left;
+        }
+
+        .stat-val {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #00ffa2;
+            margin-top: 4px;
+        }
+
+        .guide-step {
+            text-align: left;
+            background: rgba(0,0,0,0.6);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #8e8e9f;
+            border: 1px solid #202030;
+            line-height: 1.6;
+        }
+
+            .guide-step h3 {
+                font-family: 'RealTerminator', 'Orbitron', sans-serif;
+                color: #00ffa2;
+                margin-top: 0;
+                font-size: 1.1em;
+                letter-spacing: 1px;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>SDVX NABLA VFOP</h1>
+
+        <div id="statusBox" class="status-box">
+            SYSTEM ONLINE. 사볼 ∇ 공식 페이지 소스코드를 하단에 붙여넣어 전적을 동기화하세요.
+        </div>
+
+        <textarea id="htmlInput" placeholder="> Paste Full HTML Source Code Here... (Ctrl + V)"></textarea>
+        <button onclick="processSdvxHtml()">DASHBOARD LINK</button>
+
+        <div id="dashboardView" class="dashboard-view">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-title">SYSTEM STATUS // TRANSMISSION SUCCESS</div>
+                </div>
+                <div class="info-grid">
+                    <div class="info-name-block">
+                        <div class="info-label">PLAYER</div>
+                        <div class="info-name" id="userName">-</div>
+                        <div class="info-id" id="userId">SV-0000-0000</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="info-label">VOLFORCE</div>
+                        <div class="info-vf" id="userVf">0.000</div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="info-label">PLAY COUNT</div>
+                        <div class="stat-val" id="playCount">0회</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="info-label">TOTAL CLEAR SONGS</div>
+                        <div class="stat-val" id="totalClear">0곡</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="info-label">LAST PLAY DATE</div>
+                        <div class="stat-val" id="lastDate" style="font-size:0.95em; color:#fff;">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="info-label">LAST AREA STAGE</div>
+                        <div class="stat-val" id="lastShop" style="color:#ff007c;">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <h3>💡 SERVER DEPLOYMENT MANUAL</h3>
+            <p>1. 이 소스코드를 서버의 루트 웹 디렉토리에 <code>index.html</code>로 저장합니다.</p>
+            <p>2. 동일한 경로에 <code>Terminator.ttf</code>와 <code>Bauhaus93.ttf</code> 파일을 업로드합니다.</p>
+            <p>3. 사볼 전적 웹페이지 소스 원본을 붙여넣으면 로컬 폰트 바인딩 및 전적 데이터 정밀 매핑이 실시간 가동됩니다.</p>
+        </div>
+    </div>
+
+    <script>
+        function processSdvxHtml() {
+            const html = document.getElementById('htmlInput').value.trim();
+
+            if (!html) {
+                alert("❌ 스캔할 데이터가 존재하지 않습니다.");
+                return;
+            }
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+
+            // 1. 프로필 핵심 요소 식별
+            const nameEl = doc.querySelector("#player_name p:nth-child(2)");
+            const vfEl = doc.querySelector("#force_point");
+            const idEl = doc.querySelector("#player_id");
+
+            // 2. 확장 세부 전적 요소 식별 (제공된 리얼 소스코드 기반 저격 파싱)
+            let playCountText = "0회";
+            let lastDateText = "-";
+            let lastShopText = "-";
+            let totalClearCount = "0곡";
+
+            // 리스트를 순회하며 텍스트 매칭으로 전적 데이터 강제 스캔
+            const rows = doc.querySelectorAll("#profile_li li");
+            rows.forEach(row => {
+                const col = row.querySelector(".profile_col");
+                const cnt = row.querySelector(".profile_cnt");
+                if (col && cnt) {
+                    const title = col.textContent.trim();
+                    const val = cnt.textContent.trim();
+                    if (title.includes("プレー回数")) playCountText = val;
+                    if (title.includes("最終プレー日時")) lastDateText = val;
+                    if (title.includes("最終プレー店舗")) lastShopText = val;
+                }
+            });
+
+            // 클리어 테이블 합계값 추출 (cl_tbl 내의 합계 행 추적)
+            const totalClearEl = doc.querySelector("table.cl_tbl tr:last-child td:last-child");
+            if (totalClearEl) {
+                totalClearCount = totalClearEl.textContent.trim() + "곡";
+            }
+
+            let name = nameEl ? nameEl.textContent.trim() : "알 수 없음";
+            let vf = vfEl ? vfEl.textContent.trim() : "0.000";
+            let id = idEl ? idEl.textContent.trim() : "SV-0000-0000";
+
+            if (html.includes("SOUND VOLTEX") || vf !== "0.000") {
+                document.getElementById('statusBox').innerText = "✅ DESKTOP LINK COMPLETE. 모든 레이아웃 세부 데이터 동기화 완료.";
+                document.getElementById('statusBox').style.borderColor = "#00ffa2";
+
+                // UI 컴포넌트 맵 데이터 적용
+                document.getElementById('dashboardView').style.display = "block";
+                document.getElementById('userName').innerText = name;
+                document.getElementById('userVf').innerText = vf;
+                document.getElementById('userId').innerText = id;
+
+                document.getElementById('playCount').innerText = playCountText;
+                document.getElementById('totalClear').innerText = totalClearCount;
+                document.getElementById('lastDate').innerText = lastDateText;
+                document.getElementById('lastShop').innerText = lastShopText;
+            } else {
+                alert("❌ 분석 실패: 유효한 사운드볼텍스 데이터셋 구조를 찾을 수 없습니다.");
+            }
+        }
+    </script>
+
+</body>
+</html>
